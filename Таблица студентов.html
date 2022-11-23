@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+    <title>Таблица студентов</title>
+    <style>     
+		.input-tab {
+            border: 1px solid steelblue;
+			padding-left: 10px;
+			padding-right: 10px;
+			padding-top: 10px;
+			padding-bottom: 10px;
+        }		
+		
+		.input-tab-highTd {
+			height: 25px;			
+		}
+		
+		.input-tab-emptyTd {
+			width: 80px;			
+		}		
+		
+        .students-tab {
+            border: 1px solid steelblue;
+            border-collapse: collapse;
+            margin-bottom: 50px;
+        }
+
+        .students-tab tr td {
+            border: 1px solid steelblue;
+			height: 20px;
+        }
+		
+		.students-tab-studentName {
+			width: 200px;
+		}
+		
+		.students-tab-gender {
+			width: 150px;
+		}
+		
+		.students-tab-birthdate {
+			width: 150px;
+		}
+		
+		.students-tab-age {
+			width: 100px;
+		}
+    </style>
+    
+    <script>        
+        function addStudent() {
+			const table = document.getElementById("studentsTab")
+			
+			addRow(table)
+			addRowsAverageAge(table)
+        }
+		
+		function addRow(table) {
+			deleteLastTwoRows(table)
+						
+			const newRow = table.insertRow(table.rows.length)			
+			addCell(newRow, "studentName")			
+			addCell(newRow, "gender")
+			addCell(newRow, "birthdate")
+			addCell(newRow, "<age>")
+        }	
+    
+		function addCell(newRow, field) {
+			if (field != "<age>") {
+				const newCell = newRow.insertCell(-1)		
+				let value = document.getElementById(field).value	
+
+				if (field == "birthdate") {
+					const dateParts = value.split("-")
+					value = dateParts[2] + "." + dateParts[1] + "." + dateParts[0]
+				}
+				
+				const cellText = document.createTextNode(value)			
+				newCell.appendChild(cellText)		
+			} else {
+				const newCell = newRow.insertCell(-1)		
+				const value = getAge()	
+				const cellText = document.createTextNode(value)			
+				newCell.appendChild(cellText)				
+			}			
+        }
+	
+		function addCellAverageAge(newRow, field, colspan, table) {
+			if (field == "<empty>") {
+				const newCell = newRow.insertCell(-1)
+				newCell.setAttribute('colspan', colspan)				
+				const cellText = document.createTextNode("")	
+				newCell.appendChild(cellText)
+			} else if (field == "<averageAge>") {
+				const newCell = newRow.insertCell(-1)
+				const value = getAverageAge(table)		
+				const cellText = document.createTextNode(value)			
+				newCell.appendChild(cellText)
+			} else if (field == "<averageAgeLabel>") {
+				const newCell = newRow.insertCell(-1)
+				newCell.setAttribute('colspan', colspan)
+				const cellText = document.createTextNode("Средний возраст студентов")			
+				newCell.appendChild(cellText)
+			}	
+        }
+
+		function addRowsAverageAge(table) {			
+			const emptyRow = table.insertRow(-1)
+			addCellAverageAge(emptyRow, "<empty>", "4")				
+				
+			const filledRow = table.insertRow(-1)
+			addCellAverageAge(filledRow, "<averageAgeLabel>", "3")
+			addCellAverageAge(filledRow, "<averageAge>", undefined, table)		
+        }		
+		
+		function deleteLastTwoRows(table) {
+			const length = table.rows.length	
+			if (length > 1) {			
+				table.deleteRow(length-1)
+				table.deleteRow(length-2)				
+			}	
+        }
+		
+		function getAverageAge(table) {
+			const length = table.rows.length
+			let sumAge = 0
+			
+			for (let i=1; i<length-2; i++) {
+				sumAge = sumAge + Number(table.rows[i].cells[3].innerHTML)
+			}
+
+			return Math.floor(sumAge/(length-3))
+        }
+		
+		function getAge() {
+			const birthdateStr = document.getElementById("birthdate").value
+			birthdateMs = Date.parse(birthdateStr)
+			birthdate = new Date(birthdateMs)
+			currentDate = new Date()
+		
+			return getYearsDifference(birthdate, currentDate)
+        }
+	
+		function getYearsDifference(dt1, dt2) {
+			let yearsDiff = (dt2.getTime() - dt1.getTime()) / 1000
+			yearsDiff = yearsDiff / (60 * 60 * 24)
+			
+			return Math.floor(yearsDiff/365.25)
+		}
+    </script>
+    
+</head>
+
+<body>
+
+	<h2>Форма добавления информации о студенте</h2>
+
+	<table class="input-tab">
+		<thead>
+			<tr>
+				<td><label for="studentName">Имя студента:</label></td>
+				<td class="input-tab-emptyTd"></td>
+				<td><input id="studentName" name="studentName" type="text" value=""></td>
+			</tr>	
+			<tr>
+				<td><label for="birthdate">Дата рождения:</label></td>
+				<td class="input-tab-emptyTd"></td>
+				<td><input id="birthdate" name="birthdate" type="date" /></td>
+			</tr>
+			<tr>
+				<td><label for="gender">Пол:</label></td>
+				<td class="input-tab-emptyTd"></td>
+				<td>
+					<select id="gender" name="gender">
+						<option value="мужчина" selected>мужчина</option>
+						<option value="женщина">женщина</option>
+					</select>
+				</td>
+			</tr>		
+			<tr>
+				<td class="input-tab-highTd"></td>
+				<td class="input-tab-highTd"></td>
+				<td class="input-tab-highTd"></td>
+			</tr>
+			<tr>
+				<td><input type="submit" value="Добавить" onclick="addStudent()" /></td>
+				<td class="input-tab-emptyTd"></td>
+				<td></td>
+			</tr>
+		</thead>	
+	</table>
+		
+
+
+	<h2>Таблица студентов</h2>
+
+    <table class="students-tab" id="studentsTab">
+        <thead>
+			<tr>
+				<td class="students-tab-studentName">Имя студента</td>
+				<td class="students-tab-gender">Пол</td>
+				<td class="students-tab-birthdate">Дата рождения</td>
+				<td class="students-tab-age">Возраст</td>
+			</tr>		
+		</thead>		
+		
+        <tbody>
+        </tbody>
+    </table>
+	
+</body>
+</html>
